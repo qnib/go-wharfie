@@ -24,15 +24,20 @@ ckniep_wharfie_1 exited with code 0
 ## TODO
 
 - [X] Create basic CLI
-        - [X] Boilerplate CLI
+
+    - [X] Boilerplate CLI
+
 - [ ] DockerEE interaction
-        - [X] Connect to DockerEngine using ClientBundle
-        - [ ] Create Service
-        - [ ] Wait for service to be up
-        - [ ] Get ContainerID of all tasks
-        - [ ] Destroy service
-        - [ ] Wait for all container of service to be destroyed
+
+    - [X] Connect to DockerEngine using ClientBundle
+    - [ ] Create Service
+    - [ ] Wait for service to be up
+    - [ ] Get ContainerID of all tasks
+    - [ ] Destroy service
+    - [ ] Wait for all container of service to be destroyed
+
 - [ ] HPC interactions
-        - [ ] Fetch ssh command from mpirun
-        - [ ] transform the ssh arguments to docker exec
+
+    - [ ] Fetch ssh command from mpirun
+    - [ ] transform the ssh arguments to docker exec
 
