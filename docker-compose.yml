@@ -1,0 +1,8 @@
+wharfie:
+    image: qnib/go-wharfie:0.0.0
+    net: host
+    environment:
+      DOCKER_HOST: ${DOCKER_HOST}
+      DOCKER_CERT_PATH: ${DOCKER_CERT_PATH}
+    volumes:
+      - ${HOME}:${HOME}:ro
