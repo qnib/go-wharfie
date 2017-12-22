@@ -1,11 +1,13 @@
 package wharfie
 
+import "strings"
 
 type Option func(*Options)
 
 type Options struct {
-	DockerSocket,DockerCertPath	string
-	Debug 						bool
+	DockerSocket,DockerCertPath,DockerImage,JobId	string
+	NodeList 										[]string
+	Debug 											bool
 }
 
 var defaultDracerOptions = Options {
@@ -14,9 +16,27 @@ var defaultDracerOptions = Options {
 	Debug: Debug,
 }
 
+func WithNodeList(nl string) Option {
+	return func(o *Options) {
+		o.NodeList = strings.Split(nl, ",")
+	}
+}
+
 func WithDockerSocket(s string) Option {
 	return func(o *Options) {
 		o.DockerSocket = s
+	}
+}
+
+func WithJobId(s string) Option {
+	return func(o *Options) {
+		o.JobId = s
+	}
+}
+
+func WithDockerImage(s string) Option {
+	return func(o *Options) {
+		o.DockerImage = s
 	}
 }
 

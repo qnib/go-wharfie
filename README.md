@@ -30,6 +30,7 @@ ckniep_wharfie_1 exited with code 0
 - [ ] DockerEE interaction
 
     - [X] Connect to DockerEngine using ClientBundle
+    - [X] Add `slurm.jobid=<jobid>` label to all nodes within the job
     - [ ] Create Service
     - [ ] Wait for service to be up
     - [ ] Get ContainerID of all tasks

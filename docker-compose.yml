@@ -1,8 +1,9 @@
 wharfie:
-    image: qnib/go-wharfie:0.0.0
+    image: qnib/go-wharfie:latest
     net: host
     environment:
       DOCKER_HOST: ${DOCKER_HOST}
       DOCKER_CERT_PATH: ${DOCKER_CERT_PATH}
     volumes:
       - ${HOME}:${HOME}:ro
+      - /var/run/docker.sock:/var/run/docker.sock

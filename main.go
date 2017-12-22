@@ -25,13 +25,32 @@ var (
 		Usage: "Print proxy requests",
 		EnvVar: "WHARFY_DEBUG",
 	}
-
+	dockerImageFlag = cli.StringFlag{
+		Name:  "docker-image",
+		Usage: "Docker Image to use for JOB.",
+	}
+	jobIdFlag = cli.StringFlag{
+		Name:  "job-id",
+		Usage: "Job ID.",
+		EnvVar: "SLURM_JOB_ID",
+	}
+	nodeListFlag = cli.StringFlag{
+		Name:  "node-list",
+		Usage: "Comma separated list of nodes (container names)",
+		EnvVar: "WHARFY_NODE_LIST",
+	}
 
 )
 
 func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	dockerSock, _ := cfg.String("docker-host")
 	po = append(po, wharfie.WithDockerSocket(dockerSock))
+	dockerImage, _ := cfg.String("docker-image")
+	po = append(po, wharfie.WithDockerImage(dockerImage))
+	nodeList, _ := cfg.String("node-list")
+	po = append(po, wharfie.WithNodeList(nodeList))
+	jobId, _ := cfg.String("job-id")
+	po = append(po, wharfie.WithJobId(jobId))
 	dockerCertPath, _ := cfg.String("docker-cert-path")
 	po = append(po, wharfie.WithDockerCertPath(dockerCertPath))
 	debug, _ := cfg.Bool("debug")
@@ -55,6 +74,9 @@ func main() {
 	app.Flags = []cli.Flag{
 		debugFlag,
 		dockerSocketFlag,
+		dockerImageFlag,
+		jobIdFlag,
+		nodeListFlag,
 	}
 	app.Action = RunApp
 	app.Run(os.Args)
