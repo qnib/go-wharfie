@@ -3,14 +3,16 @@ package wharfie
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/docker/docker/client"
 
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/mount"
-	"os"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"time"
+	"strings"
 )
 
 
@@ -68,7 +70,7 @@ func (w *Wharfie) AddJobIdLabel() (err error) {
 		return
 	}
 	for _, node := range nodeList {
-		key := fmt.Sprintf("slurm.jobid.%s", w.do.JobId)
+		key := fmt.Sprintf("job.id.%s", w.do.JobId)
 		n, _ ,err := w.engCli.NodeInspectWithRaw(context.Background(), node.ID)
 		if err != nil {
 			fmt.Printf("Error while NodeInspectWithRaw(%s): %s\n", node.ID, err)
@@ -112,12 +114,11 @@ func (w *Wharfie) RmJobIdLabel() (err error) {
 }
 
 
-func (w *Wharfie) CreateService(jobid int) {
-	srvAnnotations := map[string]string{"job.id": string(jobid)}
-	rep := uint64(3)
+func (w *Wharfie) CreateService() (err error){
+	srvAnnotations := map[string]string{"job.id": w.do.JobId}
 	env := []string{
 		"DOCKER_HOST", os.Getenv("DOCKER_HOST"),
-		"DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"),
+		//"DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"),
 	}
 	homeMount := mount.Mount{Source: "/home/", Target: "/home",}
 	contSpec := swarm.ContainerSpec{
@@ -129,20 +130,83 @@ func (w *Wharfie) CreateService(jobid int) {
 	taskTemp := swarm.TaskSpec{
 		ContainerSpec: contSpec,
 		Placement: &swarm.Placement{Constraints: []string{
-			fmt.Sprintf("job.id=%d", jobid),
+			fmt.Sprintf("node.labels.job.id.%s==true", w.do.JobId),
 		}},
 	}
 	srvSpec := swarm.ServiceSpec{
-		Annotations: swarm.Annotations{Name: "srv", Labels: srvAnnotations},
+		Annotations: swarm.Annotations{Name: fmt.Sprintf("JobID%s",w.do.JobId), Labels: srvAnnotations},
 		TaskTemplate: taskTemp,
-		Mode: swarm.ServiceMode{Replicated: &swarm.ReplicatedService{Replicas: &rep}},
+		Mode: swarm.ServiceMode{Global: &swarm.GlobalService{}},
 	}
-	w.engCli.ServiceCreate(context.Background(), srvSpec, types.ServiceCreateOptions{})
-
+	resp, err := w.engCli.ServiceCreate(context.Background(), srvSpec, types.ServiceCreateOptions{})
+	fmt.Printf("Response: %v\n", resp)
+	if err != nil {
+		fmt.Printf("Error while ServiceCreate(): %s\n", err.Error())
+	}
+	return
 }
+
+func (w *Wharfie) RemoveService() (err error) {
+	srvName := fmt.Sprintf("JobID%s",w.do.JobId)
+	err = w.engCli.ServiceRemove(context.Background(), srvName)
+	if err != nil {
+		fmt.Printf("Error during RemoveService(): %s\n", err.Error())
+	} else {
+		fmt.Printf("Service '%s' removed\n", srvName)
+	}
+	return
+}
+func (w *Wharfie) WaitForService() (err error) {
+	srvName := fmt.Sprintf("JobID%s",w.do.JobId)
+	f := filters.NewArgs()
+	f.Add("name", srvName)
+	srvList, err := w.engCli.ServiceList(context.Background(), types.ServiceListOptions{Filters: f})
+	if err != nil {
+		fmt.Printf("Error during ServiceList()")
+		return
+	}
+	if len(srvList) == 0 {
+		return fmt.Errorf("No service found with name '%s'", srvName)
+	}
+	srv := srvList[0]
+	srvInfo, _, err := w.engCli.ServiceInspectWithRaw(context.Background(), srv.ID)
+	fmt.Printf("Service: %v\n", srvInfo)
+
+	f = filters.NewArgs()
+	f.Add("service", srvName)
+	for {
+		taskStatus := map[string]int{
+			"scheduling": 0,
+			"pending": 0,
+			"starting": 0,
+			"running": 0,
+		}
+		tasks, _ := w.engCli.TaskList(context.Background(), types.TaskListOptions{Filters: f})
+		for _, task := range tasks {
+			taskStatus[string(task.Status.State)] += 1
+		}
+		statStr := []string{}
+		for k, v := range taskStatus {
+			if v != 0 {
+				statStr = append(statStr, fmt.Sprintf("%s=%d", k, v))
+			}
+		}
+		fmt.Println(strings.Join(statStr, "/"))
+		if taskStatus["running"] == len(tasks) {
+			break
+		}
+		time.Sleep(time.Duration(1)*time.Second)
+	}
+	return
+}
+
 
 func (w *Wharfie) Run() {
 	w.Connect()
 	w.AddJobIdLabel()
+	w.CreateService()
+	w.WaitForService()
+	w.RemoveService()
 	w.RmJobIdLabel()
+
 }

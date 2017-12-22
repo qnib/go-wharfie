@@ -30,11 +30,11 @@ ckniep_wharfie_1 exited with code 0
 - [ ] DockerEE interaction
 
     - [X] Connect to DockerEngine using ClientBundle
-    - [X] Add `slurm.jobid=<jobid>` label to all nodes within the job
-    - [ ] Create Service
-    - [ ] Wait for service to be up
+    - [X] Add/rm `job.id=<jobid>` label to all nodes within the job
+    - [X] Create Service
+    - [X] Wait for service to be up
     - [ ] Get ContainerID of all tasks
-    - [ ] Destroy service
+    - [X] Destroy service
     - [ ] Wait for all container of service to be destroyed
 
 - [ ] HPC interactions
