@@ -27,15 +27,15 @@ ckniep_wharfie_1 exited with code 0
 
     - [X] Boilerplate CLI
 
-- [ ] DockerEE interaction
+- [X] DockerEE interaction
 
     - [X] Connect to DockerEngine using ClientBundle
     - [X] Add/rm `job.id=<jobid>` label to all nodes within the job
     - [X] Create Service
     - [X] Wait for service to be up
-    - [ ] Get ContainerID of all tasks
+    - [X] Get ContainerID of all tasks
     - [X] Destroy service
-    - [ ] Wait for all container of service to be destroyed
+    - [X] Wait for all container of service to be destroyed
 
 - [ ] HPC interactions
 

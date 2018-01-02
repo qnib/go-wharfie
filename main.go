@@ -34,6 +34,12 @@ var (
 		Usage: "Job ID.",
 		EnvVar: "SLURM_JOB_ID",
 	}
+	replicaFlag = cli.IntFlag{
+		Name:  "replicas",
+		Usage: "Service replicas, 0 creates a global service.",
+		Value: 0,
+		EnvVar: "WHARFY_SERVICE_REPLICAS",
+	}
 	nodeListFlag = cli.StringFlag{
 		Name:  "node-list",
 		Usage: "Comma separated list of nodes (container names)",
@@ -55,15 +61,33 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	po = append(po, wharfie.WithDockerCertPath(dockerCertPath))
 	debug, _ := cfg.Bool("debug")
 	po = append(po, wharfie.WithDebugValue(debug))
+	replicas, _ := cfg.Int("replicas")
+	po = append(po, wharfie.WithReplicas(replicas))
 	return
 }
 
-func RunApp(ctx *cli.Context) {
+func SshTasks(ctx *cli.Context) {
 	log.Printf("[II] Start Version: %s", ctx.App.Version)
 	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
 	po := EvalOptions(cfg)
 	p := wharfie.New(po...)
-	p.Run()
+	p.Ssh(ctx)
+}
+
+func StageService(ctx *cli.Context) {
+	log.Printf("[II] Start Version: %s", ctx.App.Version)
+	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
+	po := EvalOptions(cfg)
+	p := wharfie.New(po...)
+	p.Stage()
+}
+
+func RemoveService(ctx *cli.Context) {
+	log.Printf("[II] Start Version: %s", ctx.App.Version)
+	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
+	po := EvalOptions(cfg)
+	p := wharfie.New(po...)
+	p.Remove()
 }
 
 func main() {
@@ -77,7 +101,19 @@ func main() {
 		dockerImageFlag,
 		jobIdFlag,
 		nodeListFlag,
+		replicaFlag,
 	}
-	app.Action = RunApp
+	app.Commands = []cli.Command{
+		{
+			Name:    "stage",
+			Usage:   "Create service and wait for all tasks to be up.",
+			Action: StageService,
+		},{
+			Name:    "remove",
+			Usage:   "Remove service and wait for all tasks to be removed.",
+			Action: RemoveService,
+		},
+	}
+	app.Action = SshTasks
 	app.Run(os.Args)
 }

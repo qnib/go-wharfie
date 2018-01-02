@@ -1,9 +1,16 @@
-wharfie:
-    image: qnib/go-wharfie:latest
-    net: host
-    environment:
-      DOCKER_HOST: ${DOCKER_HOST}
-      DOCKER_CERT_PATH: ${DOCKER_CERT_PATH}
+version: '3.3'
+
+services:
+  openmpi:
+    image: qnib/uplain-openmpi-sshd
     volumes:
-      - ${HOME}:${HOME}:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/:/home/
+    networks:
+      - outside
+    deploy:
+      mode: global
+
+networks:
+  outside:
+    external:
+      name: "host"
