@@ -5,10 +5,10 @@ import "strings"
 type Option func(*Options)
 
 type Options struct {
-	DockerSocket,DockerCertPath,DockerImage,JobId	string
-	NodeList,Volumes								[]string
-	Debug 											bool
-	Replicas 										int
+	DockerSocket,DockerCertPath,DockerImage,JobId,Username,Homedir	string
+	NodeList,Volumes												[]string
+	Debug 															bool
+	Replicas 														int
 }
 
 var defaultDracerOptions = Options {
@@ -39,6 +39,18 @@ func WithReplicas(rep int) Option {
 func WithDockerSocket(s string) Option {
 	return func(o *Options) {
 		o.DockerSocket = s
+	}
+}
+
+func WithUsername(s string) Option {
+	return func(o *Options) {
+		o.Username = s
+	}
+}
+
+func WithHomedir(s string) Option {
+	return func(o *Options) {
+		o.Homedir = s
 	}
 }
 

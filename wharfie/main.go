@@ -48,16 +48,18 @@ func (w *Wharfie) Log(level, msg string) {
 	hostname, _ := os.Hostname()
 	log.Printf("%s [%-6s] %s", hostname, strings.ToUpper(level), msg)
 }
+
 func (w *Wharfie) Connect() {
 	var err error
 	w.engCli, err = client.NewEnvClient()
 	if err != nil {
-		log.Printf("Could not connect docker/docker/client to '%s': %v", w.do.DockerSocket, err)
+		w.Log("error", fmt.Sprintf("Could not connect docker/docker/client to '%s': %v", w.do.DockerSocket, err))
 		return
 	}
 	info, err := w.engCli.Info(ctx)
 	if err != nil {
 		w.Log("error", fmt.Sprintf("Error during Info(): %v >err> %s", info, err))
+		w.Log("debug", strings.Join(os.Environ()," / "))
 		return
 	} else {
 		w.Log("info", fmt.Sprintf("Connected to '%s' / v'%s' (SWARM: %s)\n", info.Name, info.ServerVersion, info.Swarm.LocalNodeState))
@@ -75,7 +77,7 @@ func (w *Wharfie) GetNodesFiltered() ([]swarm.Node, error) {
 func (w *Wharfie) AddJobIdLabel() (err error) {
 	nodeList, err := w.GetNodesFiltered()
 	if err != nil {
-		log.Fatalf("Error while NodeList(): %s\n", err)
+		w.Log("error", fmt.Sprintf("Error while NodeList(): %s\n", err))
 		return
 	}
 	for _, node := range nodeList {

@@ -28,11 +28,24 @@ var (
 	dockerImageFlag = cli.StringFlag{
 		Name:  "docker-image",
 		Usage: "Docker Image to use for JOB.",
+		Value: "qnib/uplain-openmpi:upstream",
 	}
 	jobIdFlag = cli.StringFlag{
 		Name:  "job-id",
 		Usage: "Job ID.",
 		EnvVar: "SLURM_JOB_ID",
+	}
+	usernameFlag = cli.StringFlag{
+		Name:  "username",
+		Usage: "Uid to run container with.",
+		Value: "cluser",
+		EnvVar: "WHARFY_USERNAME",
+	}
+	homedirFlag = cli.StringFlag{
+		Name:  "homedir",
+		Usage: "Homedir prefix. Workdir of containers are going to be '${homedir}/${user}'.",
+		Value: "/home/",
+		EnvVar: "WHARFY_HOMEDIR",
 	}
 	replicaFlag = cli.IntFlag{
 		Name:  "replicas",
@@ -71,6 +84,10 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	po = append(po, wharfie.WithReplicas(replicas))
 	vols, _ := cfg.String("volumes")
 	po = append(po, wharfie.WithVolumes(vols))
+	hdir, _ := cfg.String("homedir")
+	po = append(po, wharfie.WithHomedir(hdir))
+	uname, _ := cfg.String("username")
+	po = append(po, wharfie.WithUsername(uname))
 	return
 }
 
@@ -118,6 +135,8 @@ func main() {
 			Flags: []cli.Flag{
 				mountsFlag,
 				replicaFlag,
+				usernameFlag,
+				homedirFlag,
 			},
 		},{
 			Name:    "remove",

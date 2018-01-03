@@ -52,10 +52,11 @@ func (w *Wharfie) CreateService() (err error){
 	}
 	contSpec := swarm.ContainerSpec{
 		Image: w.do.DockerImage,
-		//Command: []string{"tail", "-f", "/dev/null"},
 		Mounts: mounts,
 		Env: env,
 		Hostname: `{{.Service.Name}}.{{.Task.Slot}}.{{.Task.ID}}`,
+		Dir: fmt.Sprintf("%s/%s", w.do.Homedir, w.do.Username),
+		User: w.do.Username,
 	}
 	netConfig := []swarm.NetworkAttachmentConfig{}
 	netConfig = append(netConfig, swarm.NetworkAttachmentConfig{Target: id})
@@ -65,6 +66,7 @@ func (w *Wharfie) CreateService() (err error){
 		Placement: &swarm.Placement{Constraints: []string{
 			fmt.Sprintf("node.labels.job.id.%s==true", w.do.JobId),
 		}},
+
 	}
 	srvSpec := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{Name: fmt.Sprintf("jobid%s",w.do.JobId), Labels: srvAnnotations},
