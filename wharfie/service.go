@@ -41,11 +41,14 @@ func (w *Wharfie) CreateService() (err error){
 	mounts := []mount.Mount{}
 	for _, vols := range w.do.Volumes {
 		slice := strings.Split(vols, ":")
-		if len(slice) != 2 {
-			log.Printf("WARN: Could not parse volume: %s", vols)
-			continue
+		switch len(slice) {
+			case 0:
+				continue
+			case 2:
+				mounts = append(mounts, mount.Mount{Source: slice[0], Target: slice[1]})
+			default:
+				log.Printf("WARN: Could not parse volume: %s", vols)
 		}
-		mounts = append(mounts, mount.Mount{Source: slice[0], Target: slice[1]})
 	}
 	contSpec := swarm.ContainerSpec{
 		Image: w.do.DockerImage,

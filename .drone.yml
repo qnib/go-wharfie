@@ -1,0 +1,13 @@
+workspace:
+  base: /usr/local/src
+  path: github.com/qnib/go-wharfie/
+
+pipeline:
+  alpine:
+    image: qnib/alplain-golang:1.9
+    commands:
+      - /usr/local/go/bin/go build -o ./usr/bin/go-wharfie$(git describe --abbrev=0 --tags)_Alpine
+  x86:
+    image: qnib/uplain-golang
+    commands:
+      - go build -o ./usr/bin/go-wharfie$(git describe --abbrev=0 --tags)_Linux
