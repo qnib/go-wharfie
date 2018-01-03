@@ -119,7 +119,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "CLI to help mpirun to use docker container."
 	app.Usage = "go-wharfie [options]"
-	app.Version = "0.1.2"
+	app.Version = "0.1.3"
 	app.Flags = []cli.Flag{
 		debugFlag,
 		dockerSocketFlag,
