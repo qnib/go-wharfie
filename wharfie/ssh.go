@@ -9,6 +9,7 @@ import (
 	"io"
 	"bufio"
 	"os/exec"
+	"os"
 )
 
 var (
@@ -17,7 +18,6 @@ var (
 
 func (w *Wharfie) Ssh(ctx *cli.Context) {
 	w.Connect()
-	log.Printf("%v", ctx.Args())
 	node := ctx.Args()[0]
 	task, err := w.GetServiceTask(node)
 	if err != nil {
@@ -28,7 +28,7 @@ func (w *Wharfie) Ssh(ctx *cli.Context) {
 		Privileged: false,
 		Cmd: ctx.Args()[1:],
 		Tty: true,
-		//Env: os.Environ(),
+		Env: os.Environ(),
 	}
 	cmdStr := fmt.Sprintf("docker exec -t -u %s %v %s", cmd.User, task.Status.ContainerStatus.ContainerID, strings.Join(cmd.Cmd, " "))
 	log.Println(cmdStr)

@@ -11,6 +11,8 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"log"
 
+	"strings"
+	"os"
 )
 
 
@@ -42,6 +44,10 @@ func New(opts ...Option) Wharfie {
 	}
 }
 
+func (w *Wharfie) Log(level, msg string) {
+	hostname, _ := os.Hostname()
+	log.Printf("%s [%-6s] %s", hostname, strings.ToUpper(level), msg)
+}
 func (w *Wharfie) Connect() {
 	var err error
 	w.engCli, err = client.NewEnvClient()
@@ -51,10 +57,10 @@ func (w *Wharfie) Connect() {
 	}
 	info, err := w.engCli.Info(ctx)
 	if err != nil {
-		log.Printf("Error during Info(): %v >err> %s", info, err)
+		w.Log("error", fmt.Sprintf("Error during Info(): %v >err> %s", info, err))
 		return
 	} else {
-		log.Printf("Connected to '%s' / v'%s' (SWARM: %s)\n", info.Name, info.ServerVersion, info.Swarm.LocalNodeState)
+		w.Log("info", fmt.Sprintf("Connected to '%s' / v'%s' (SWARM: %s)\n", info.Name, info.ServerVersion, info.Swarm.LocalNodeState))
 	}
 }
 
