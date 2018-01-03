@@ -6,8 +6,8 @@ pipeline:
   alpine:
     image: qnib/alplain-golang:1.9
     commands:
-      - /usr/local/go/bin/go build -o ./usr/bin/go-wharfie$(git describe --abbrev=0 --tags)_Alpine
+      - /usr/local/go/bin/go build -o ./usr/bin/go-wharfie_Alpine
   x86:
     image: qnib/uplain-golang
     commands:
-      - go build -o ./usr/bin/go-wharfie$(git describe --abbrev=0 --tags)_Linux
+      - go build -o ./usr/bin/go-wharfie_x86
