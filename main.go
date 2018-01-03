@@ -40,6 +40,12 @@ var (
 		Value: 0,
 		EnvVar: "WHARFY_SERVICE_REPLICAS",
 	}
+	mountsFlag = cli.StringFlag{
+		Name:  "volumes",
+		Usage: "Comma separated list of bind-mounts",
+		EnvVar: "WHARFY_VOLUMES",
+	}
+
 	nodeListFlag = cli.StringFlag{
 		Name:  "node-list",
 		Usage: "Comma separated list of nodes (container names)",
@@ -63,6 +69,8 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	po = append(po, wharfie.WithDebugValue(debug))
 	replicas, _ := cfg.Int("replicas")
 	po = append(po, wharfie.WithReplicas(replicas))
+	vols, _ := cfg.String("volumes")
+	po = append(po, wharfie.WithVolumes(vols))
 	return
 }
 
@@ -101,13 +109,16 @@ func main() {
 		dockerImageFlag,
 		jobIdFlag,
 		nodeListFlag,
-		replicaFlag,
 	}
 	app.Commands = []cli.Command{
 		{
 			Name:    "stage",
 			Usage:   "Create service and wait for all tasks to be up.",
 			Action: StageService,
+			Flags: []cli.Flag{
+				mountsFlag,
+				replicaFlag,
+			},
 		},{
 			Name:    "remove",
 			Usage:   "Remove service and wait for all tasks to be removed.",

@@ -24,13 +24,14 @@ func (w *Wharfie) Ssh(ctx *cli.Context) {
 		log.Fatal(err.Error())
 	}
 	cmd := types.ExecConfig{
-		User: "user", //fmt.Sprintf("%d", os.Getuid()),
+		User: "cluser", //fmt.Sprintf("%d", os.Getuid()),
 		Privileged: false,
 		Cmd: ctx.Args()[1:],
 		Tty: true,
 		//Env: os.Environ(),
 	}
 	cmdStr := fmt.Sprintf("docker exec -t -u %s %v %s", cmd.User, task.Status.ContainerStatus.ContainerID, strings.Join(cmd.Cmd, " "))
+	log.Println(cmdStr)
 	RunExec(cmdStr)
 	/*
 	cont := context.Background()

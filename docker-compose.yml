@@ -5,6 +5,7 @@ services:
     image: qnib/uplain-openmpi-sshd
     volumes:
       - /home/:/home/
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - outside
     deploy:

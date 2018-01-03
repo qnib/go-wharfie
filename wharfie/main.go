@@ -24,6 +24,7 @@ const (
 
 var (
 	ctx = context.Background()
+	DOCKER_VOLUMES = []string{"/home/:/home/"}
 )
 
 type Wharfie struct {

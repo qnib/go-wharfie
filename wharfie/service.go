@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 	"time"
-	//"os"
+	"os"
 
 	"gopkg.in/fatih/set.v0"
 	"github.com/gosuri/uilive"
@@ -15,29 +15,56 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/mount"
 
+
 )
+
+func (w *Wharfie) CreateNetwork() (id string, err error){
+	netName := fmt.Sprintf("jobid-network%s",w.do.JobId)
+	resp, err := w.engCli.NetworkCreate(context.Background(), netName, types.NetworkCreate{Driver: "overlay"})
+	if err != nil {
+		return "", err
+	}
+	id = resp.ID
+	return
+}
 
 func (w *Wharfie) CreateService() (err error){
 	srvAnnotations := map[string]string{"job.id": w.do.JobId}
 	env := []string{
-	//	"DOCKER_HOST", os.Getenv("DOCKER_HOST"),
-	//	"DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"),
+		"DOCKER_HOST", os.Getenv("DOCKER_HOST"),
+		"DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"),
 	}
-	homeMount := mount.Mount{Source: "/home/", Target: "/home",}
+	id, err := w.CreateNetwork()
+	if err != nil {
+		log.Fatalf("Could not create network for jobid: %s", err.Error())
+	}
+	mounts := []mount.Mount{}
+	for _, vols := range w.do.Volumes {
+		slice := strings.Split(vols, ":")
+		if len(slice) != 2 {
+			log.Printf("WARN: Could not parse volume: %s", vols)
+			continue
+		}
+		mounts = append(mounts, mount.Mount{Source: slice[0], Target: slice[1]})
+	}
 	contSpec := swarm.ContainerSpec{
 		Image: w.do.DockerImage,
-		Command: []string{"tail", "-f", "/dev/null"},
-		Mounts: []mount.Mount{homeMount},
+		//Command: []string{"tail", "-f", "/dev/null"},
+		Mounts: mounts,
 		Env: env,
+		Hostname: `{{.Service.Name}}.{{.Task.Slot}}.{{.Task.ID}}`,
 	}
+	netConfig := []swarm.NetworkAttachmentConfig{}
+	netConfig = append(netConfig, swarm.NetworkAttachmentConfig{Target: id})
 	taskTemp := swarm.TaskSpec{
 		ContainerSpec: contSpec,
+		Networks: netConfig,
 		Placement: &swarm.Placement{Constraints: []string{
 			fmt.Sprintf("node.labels.job.id.%s==true", w.do.JobId),
 		}},
 	}
 	srvSpec := swarm.ServiceSpec{
-		Annotations: swarm.Annotations{Name: fmt.Sprintf("JobID%s",w.do.JobId), Labels: srvAnnotations},
+		Annotations: swarm.Annotations{Name: fmt.Sprintf("jobid%s",w.do.JobId), Labels: srvAnnotations},
 		TaskTemplate: taskTemp,
 		Mode: swarm.ServiceMode{Global: &swarm.GlobalService{}},
 	}
@@ -55,7 +82,7 @@ func (w *Wharfie) CreateService() (err error){
 
 func (w *Wharfie) RemoveService() (err error) {
 	tasks, _ := w.GetTasks()
-	srvName := fmt.Sprintf("JobID%s",w.do.JobId)
+	srvName := fmt.Sprintf("jobid%s",w.do.JobId)
 	err = w.engCli.ServiceRemove(ctx, srvName)
 	if err != nil {
 		log.Printf("Error during RemoveService(): %s\n", err.Error())
@@ -86,7 +113,7 @@ func (w *Wharfie) RemoveService() (err error) {
 }
 
 func (w *Wharfie) GetTasks() (tasks []swarm.Task, err error){
-	srvName := fmt.Sprintf("JobID%s",w.do.JobId)
+	srvName := fmt.Sprintf("jobid%s",w.do.JobId)
 	f := filters.NewArgs()
 	f.Add("service", srvName)
 	tasks, err = w.engCli.TaskList(context.Background(), types.TaskListOptions{Filters: f})
@@ -95,7 +122,7 @@ func (w *Wharfie) GetTasks() (tasks []swarm.Task, err error){
 
 func (w *Wharfie) GetServiceTask(node string) (task swarm.Task, err error){
 	f := filters.NewArgs()
-	f.Add("service", "job_openmpi") //fmt.Sprintf("JobID%s",w.do.JobId)
+	f.Add("service", fmt.Sprintf("jobid%s",w.do.JobId))
 	f.Add("node", node)
 	f.Add("desired-state","running")
 	tasks, err := w.engCli.TaskList(context.Background(), types.TaskListOptions{Filters: f})
@@ -112,7 +139,7 @@ func (w *Wharfie) GetServiceTask(node string) (task swarm.Task, err error){
 }
 
 func (w *Wharfie) WaitForService() (err error) {
-	srvName := fmt.Sprintf("JobID%s",w.do.JobId)
+	srvName := fmt.Sprintf("jobid%s",w.do.JobId)
 	f := filters.NewArgs()
 	f.Add("name", srvName)
 	srvList, err := w.engCli.ServiceList(context.Background(), types.ServiceListOptions{Filters: f})

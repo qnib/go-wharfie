@@ -6,7 +6,7 @@ type Option func(*Options)
 
 type Options struct {
 	DockerSocket,DockerCertPath,DockerImage,JobId	string
-	NodeList 										[]string
+	NodeList,Volumes								[]string
 	Debug 											bool
 	Replicas 										int
 }
@@ -15,6 +15,7 @@ var defaultDracerOptions = Options {
 	DockerSocket: DOCKER_API_HOST,
 	DockerCertPath: DOCKER_CERT_PATH,
 	Debug: Debug,
+	Volumes: DOCKER_VOLUMES,
 	Replicas: 0,
 }
 
@@ -24,6 +25,11 @@ func WithNodeList(nl string) Option {
 	}
 }
 
+func WithVolumes(s string) Option {
+	return func(o *Options) {
+		o.Volumes = strings.Split(s, ",")
+	}
+}
 func WithReplicas(rep int) Option {
 	return func(o *Options) {
 		o.Replicas = rep
