@@ -39,6 +39,7 @@ ckniep_wharfie_1 exited with code 0
 
 - [ ] HPC interactions
 
-    - [ ] Fetch ssh command from mpirun
-    - [ ] transform the ssh arguments to docker exec
+    - [X] Fetch ssh command from mpirun
+    - [X] transform the ssh arguments to docker exec bash command
+    - [ ] use docker client to drop `docker exec` fork
 
