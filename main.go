@@ -29,6 +29,7 @@ var (
 		Name:  "docker-image",
 		Usage: "Docker Image to use for JOB.",
 		Value: "qnib/uplain-openmpi:upstream",
+		EnvVar: "WHARFY_DOCKER_IMAGE",
 	}
 	jobIdFlag = cli.StringFlag{
 		Name:  "job-id",

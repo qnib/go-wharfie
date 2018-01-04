@@ -14,4 +14,4 @@
 .glide/
 
 ### go-wharfie
-usr/bin/go-wharfie
+usr/bin/go-wharfie*
