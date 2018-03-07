@@ -23,13 +23,12 @@ var (
 	debugFlag = cli.BoolFlag{
 		Name: "debug",
 		Usage: "Print proxy requests",
-		EnvVar: "WHARFY_DEBUG",
+		EnvVar: "WHARFIE_DEBUG",
 	}
 	dockerImageFlag = cli.StringFlag{
 		Name:  "docker-image",
 		Usage: "Docker Image to use for JOB.",
-		Value: "qnib/uplain-openmpi:upstream",
-		EnvVar: "WHARFY_DOCKER_IMAGE",
+		EnvVar: "WHARFIE_DOCKER_IMAGE",
 	}
 	jobIdFlag = cli.StringFlag{
 		Name:  "job-id",
@@ -40,30 +39,30 @@ var (
 		Name:  "username",
 		Usage: "Uid to run container with.",
 		Value: "cluser",
-		EnvVar: "WHARFY_USERNAME",
+		EnvVar: "WHARFIE_USERNAME",
 	}
 	homedirFlag = cli.StringFlag{
 		Name:  "homedir",
 		Usage: "Homedir prefix. Workdir of containers are going to be '${homedir}/${user}'.",
 		Value: "/home/",
-		EnvVar: "WHARFY_HOMEDIR",
+		EnvVar: "WHARFIE_HOMEDIR",
 	}
 	replicaFlag = cli.IntFlag{
 		Name:  "replicas",
 		Usage: "Service replicas, 0 creates a global service.",
 		Value: 0,
-		EnvVar: "WHARFY_SERVICE_REPLICAS",
+		EnvVar: "WHARFIE_SERVICE_REPLICAS",
 	}
 	mountsFlag = cli.StringFlag{
 		Name:  "volumes",
 		Usage: "Comma separated list of bind-mounts",
-		EnvVar: "WHARFY_VOLUMES",
+		EnvVar: "WHARFIE_VOLUMES",
 	}
 
 	nodeListFlag = cli.StringFlag{
 		Name:  "node-list",
 		Usage: "Comma separated list of nodes (container names)",
-		EnvVar: "WHARFY_NODE_LIST",
+		EnvVar: "WHARFIE_NODE_LIST",
 	}
 
 )
@@ -124,7 +123,6 @@ func main() {
 	app.Flags = []cli.Flag{
 		debugFlag,
 		dockerSocketFlag,
-		dockerImageFlag,
 		jobIdFlag,
 		nodeListFlag,
 	}
@@ -138,6 +136,7 @@ func main() {
 				replicaFlag,
 				usernameFlag,
 				homedirFlag,
+				dockerImageFlag,
 			},
 		},{
 			Name:    "remove",

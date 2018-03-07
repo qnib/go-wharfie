@@ -2,16 +2,11 @@ version: '3.3'
 
 services:
   openmpi:
-    image: qnib/uplain-openmpi-sshd
-    volumes:
-      - /home/:/home/
-      - /var/run/docker.sock:/var/run/docker.sock
+    image: qnib/uplain-openmpi-sshd:upstream
     networks:
-      - outside
+      - mpinet
     deploy:
       mode: global
 
 networks:
-  outside:
-    external:
-      name: "host"
+  mpinet:

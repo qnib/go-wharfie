@@ -6,10 +6,8 @@ import (
 	"log"
 	"strings"
 	"time"
-	"os"
 
 	"gopkg.in/fatih/set.v0"
-	"github.com/gosuri/uilive"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
@@ -18,8 +16,18 @@ import (
 
 )
 
+
 func (w *Wharfie) CreateNetwork() (id string, err error){
 	netName := fmt.Sprintf("jobid-network%s",w.do.JobId)
+	f := filters.NewArgs()
+	f.Add("name", netName)
+	nets, err := w.engCli.NetworkList(context.Background(), types.NetworkListOptions{Filters: f})
+	for _, net := range nets {
+		if net.Name == netName {
+			w.Log("info", fmt.Sprintf("Network '%s' already existing... ", netName))
+			return net.ID, err
+		}
+	}
 	resp, err := w.engCli.NetworkCreate(context.Background(), netName, types.NetworkCreate{Driver: "overlay"})
 	if err != nil {
 		return "", err
@@ -30,9 +38,12 @@ func (w *Wharfie) CreateNetwork() (id string, err error){
 
 func (w *Wharfie) CreateService() (err error){
 	srvAnnotations := map[string]string{"job.id": w.do.JobId}
-	env := []string{
-		"DOCKER_HOST", os.Getenv("DOCKER_HOST"),
+	env := []string{}
+		/*"DOCKER_HOST", os.Getenv("DOCKER_HOST"),
 		"DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"),
+	}*/
+	if w.do.DockerImage == "" {
+		w.Log("error", "No image defined, please set WHARFY_DOCKER_IMAGE or use --docker-image")
 	}
 	id, err := w.CreateNetwork()
 	if err != nil {
@@ -159,10 +170,8 @@ func (w *Wharfie) WaitForService() (err error) {
 	srvInfo, _, err := w.engCli.ServiceInspectWithRaw(context.Background(), srv.ID)
 	log.Printf("Service: %v\n", srvInfo.Spec.Name)
 
-	writer := uilive.New()
+	old_line := ""
 	// start listening for updates and render
-	writer.Start()
-	defer writer.Stop()
 	for {
 		taskStatus := map[string]int{
 			"scheduling": 0,
@@ -180,7 +189,11 @@ func (w *Wharfie) WaitForService() (err error) {
 				statStr = append(statStr, fmt.Sprintf("%s=%d", k, v))
 			}
 		}
-		fmt.Fprintf(writer, "%s\n",strings.Join(statStr, "/"))
+		new_line := strings.Join(statStr, "/")
+		if old_line != new_line {
+			w.Log("debug",  new_line)
+			old_line = new_line
+		}
 		if taskStatus["running"] == len(tasks) {
 			break
 		}
