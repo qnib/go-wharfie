@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/qnib/go-wharfie/wharfie"
-	"log"
 	"github.com/zpatrick/go-config"
 	"github.com/codegangsta/cli"
 
@@ -115,26 +114,23 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 }
 
 func SshTasks(ctx *cli.Context) {
-	log.Printf("[II] Start Version: %s", ctx.App.Version)
 	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
 	po := EvalOptions(cfg)
-	p := wharfie.New(po...)
+	p := wharfie.New(ctx.App.Version,po...)
 	p.Ssh(ctx)
 }
 
 func StageService(ctx *cli.Context) {
-	log.Printf("[II] Start Version: %s", ctx.App.Version)
 	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
 	po := EvalOptions(cfg)
-	p := wharfie.New(po...)
+	p := wharfie.New(ctx.App.Version, po...)
 	p.Stage()
 }
 
 func RemoveService(ctx *cli.Context) {
-	log.Printf("[II] Start Version: %s", ctx.App.Version)
 	cfg := config.NewConfig([]config.Provider{config.NewCLI(ctx, true)})
 	po := EvalOptions(cfg)
-	p := wharfie.New(po...)
+	p := wharfie.New(ctx.App.Version, po...)
 	p.Remove()
 }
 

@@ -17,6 +17,9 @@ var (
 )
 
 func (w *Wharfie) Ssh(ctx *cli.Context) {
+	if w.do.Debug {
+		log.Printf("[II] Start Version: %s", w.do.Version)
+	}
 	w.Connect()
 	node := ctx.Args()[0]
 	task, err := w.GetServiceTask(node)
@@ -31,7 +34,9 @@ func (w *Wharfie) Ssh(ctx *cli.Context) {
 		Env: os.Environ(),
 	}
 	cmdStr := fmt.Sprintf("docker exec -t -u %s %v %s", cmd.User, task.Status.ContainerStatus.ContainerID, strings.Join(cmd.Cmd, " "))
-	log.Println(cmdStr)
+	if w.do.Debug {
+		log.Println(cmdStr)
+	}
 	RunExec(cmdStr)
 	/*
 	cont := context.Background()

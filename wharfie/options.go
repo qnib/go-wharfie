@@ -5,6 +5,7 @@ import "strings"
 type Option func(*Options)
 
 type Options struct {
+	Version 								string
 	DockerSocket,DockerCertPath,DockerImage	string
 	Constraints,JobId,Username,User,Homedir	string
 	NodeList,Volumes						[]string

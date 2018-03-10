@@ -34,11 +34,12 @@ type Wharfie struct {
 	engCli 		*client.Client
 }
 
-func New(opts ...Option) Wharfie {
+func New(ver string, opts ...Option) Wharfie {
 	options := defaultDracerOptions
 	for _, o := range opts {
 		o(&options)
 	}
+	options.Version = ver
 	return Wharfie{
 		do: options,
 	}
@@ -62,7 +63,9 @@ func (w *Wharfie) Connect() {
 		w.Log("debug", strings.Join(os.Environ()," / "))
 		return
 	} else {
-		w.Log("info", fmt.Sprintf("Connected to '%s' / v'%s' (SWARM: %s)\n", info.Name, info.ServerVersion, info.Swarm.LocalNodeState))
+		if w.do.Debug {
+			w.Log("info", fmt.Sprintf("Connected to '%s' / v'%s' (SWARM: %s)\n", info.Name, info.ServerVersion, info.Swarm.LocalNodeState))
+		}
 	}
 }
 
@@ -124,6 +127,9 @@ func (w *Wharfie) RmJobIdLabel() (err error) {
 }
 
 func (w *Wharfie) Stage() {
+	if w.do.Debug {
+		log.Printf("[II] Start Version: %s", w.do.Version)
+	}
 	w.Connect()
 	w.AddJobIdLabel()
 	w.CreateService()
@@ -131,7 +137,11 @@ func (w *Wharfie) Stage() {
 
 
 }
+
 func (w *Wharfie) Remove() {
+	if w.do.Debug {
+		log.Printf("[II] Start Version: %s", w.do.Version)
+	}
 	w.Connect()
 	w.RemoveService()
 	w.RmJobIdLabel()
