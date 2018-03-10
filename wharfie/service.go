@@ -71,12 +71,17 @@ func (w *Wharfie) CreateService() (err error){
 	}
 	netConfig := []swarm.NetworkAttachmentConfig{}
 	netConfig = append(netConfig, swarm.NetworkAttachmentConfig{Target: id})
+	constraints := []string{
+		fmt.Sprintf("node.labels.job.id.%s==true", w.do.JobId),
+	}
+	if w.do.Constraints != "" {
+		log.Printf("Add Label '%s'", w.do.Constraints)
+		constraints = append(constraints, w.do.Constraints)
+	}
 	taskTemp := swarm.TaskSpec{
 		ContainerSpec: contSpec,
 		Networks: netConfig,
-		Placement: &swarm.Placement{Constraints: []string{
-			fmt.Sprintf("node.labels.job.id.%s==true", w.do.JobId),
-		}},
+		Placement: &swarm.Placement{Constraints: constraints},
 
 	}
 	srvSpec := swarm.ServiceSpec{

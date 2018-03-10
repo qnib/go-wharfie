@@ -35,6 +35,11 @@ var (
 		Usage: "Job ID.",
 		EnvVar: "SLURM_JOB_ID",
 	}
+	constraintsFlag = cli.StringFlag{
+		Name:  "constraints",
+		Usage: "Label to limit container on.",
+		EnvVar: "WHARFIE_CONSTRAINTS",
+	}
 	usernameFlag = cli.StringFlag{
 		Name:  "username",
 		Usage: "Uid to run container with.",
@@ -88,6 +93,9 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	po = append(po, wharfie.WithHomedir(hdir))
 	uname, _ := cfg.String("username")
 	po = append(po, wharfie.WithUsername(uname))
+	constraints , _ := cfg.String("constraints")
+	po = append(po, wharfie.WithConstraints(constraints))
+
 	return
 }
 
@@ -137,6 +145,7 @@ func main() {
 				usernameFlag,
 				homedirFlag,
 				dockerImageFlag,
+				constraintsFlag,
 			},
 		},{
 			Name:    "remove",
