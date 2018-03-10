@@ -13,7 +13,7 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/api/types/mount"
 
-
+	"os"
 )
 
 
@@ -39,9 +39,10 @@ func (w *Wharfie) CreateNetwork() (id string, err error){
 func (w *Wharfie) CreateService() (err error){
 	srvAnnotations := map[string]string{"job.id": w.do.JobId}
 	env := []string{}
-		/*"DOCKER_HOST", os.Getenv("DOCKER_HOST"),
-		"DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"),
-	}*/
+	if w.do.Bundle {
+		env = append(env, "DOCKER_HOST", os.Getenv("DOCKER_HOST"))
+		env = append(env, "DOCKER_CERT_PATH", os.Getenv("DOCKER_CERT_PATH"))
+	}
 	if w.do.DockerImage == "" {
 		w.Log("error", "No image defined, please set WHARFY_DOCKER_IMAGE or use --docker-image")
 	}

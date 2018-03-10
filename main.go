@@ -25,6 +25,11 @@ var (
 		Usage: "Print proxy requests",
 		EnvVar: "WHARFIE_DEBUG",
 	}
+	bundleFlag = cli.BoolFlag{
+		Name: "bundle",
+		Usage: "Use UCP client bundle",
+		EnvVar: "WHARFIE_BUNDLE",
+	}
 	dockerImageFlag = cli.StringFlag{
 		Name:  "docker-image",
 		Usage: "Docker Image to use for JOB.",
@@ -42,14 +47,20 @@ var (
 	}
 	usernameFlag = cli.StringFlag{
 		Name:  "username",
-		Usage: "Uid to run container with.",
+		Usage: "username to define home-dir.",
 		Value: "cluser",
 		EnvVar: "WHARFIE_USERNAME",
 	}
+	userFlag = cli.StringFlag{
+		Name:  "user",
+		Usage: "UID[:GID] to run container with.",
+		Value: "1000:1000",
+		EnvVar: "WHARFIE_USER",
+	}
 	homedirFlag = cli.StringFlag{
 		Name:  "homedir",
-		Usage: "Homedir prefix. Workdir of containers are going to be '${homedir}/${user}'.",
-		Value: "/home/",
+		Usage: "Homedir prefix. Workdir of containers are going to be '${homedir}/${username}'.",
+		Value: "/home",
 		EnvVar: "WHARFIE_HOMEDIR",
 	}
 	replicaFlag = cli.IntFlag{
@@ -85,6 +96,8 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	po = append(po, wharfie.WithDockerCertPath(dockerCertPath))
 	debug, _ := cfg.Bool("debug")
 	po = append(po, wharfie.WithDebugValue(debug))
+	bundle, _ := cfg.Bool("bundle")
+	po = append(po, wharfie.WithBundleValue(bundle))
 	replicas, _ := cfg.Int("replicas")
 	po = append(po, wharfie.WithReplicas(replicas))
 	vols, _ := cfg.String("volumes")
@@ -93,6 +106,8 @@ func EvalOptions(cfg *config.Config) (po []wharfie.Option) {
 	po = append(po, wharfie.WithHomedir(hdir))
 	uname, _ := cfg.String("username")
 	po = append(po, wharfie.WithUsername(uname))
+	user, _ := cfg.String("user")
+	po = append(po, wharfie.WithUser(user))
 	constraints , _ := cfg.String("constraints")
 	po = append(po, wharfie.WithConstraints(constraints))
 
@@ -130,6 +145,7 @@ func main() {
 	app.Version = "0.1.5"
 	app.Flags = []cli.Flag{
 		debugFlag,
+		bundleFlag,
 		dockerSocketFlag,
 		jobIdFlag,
 		nodeListFlag,
@@ -143,6 +159,7 @@ func main() {
 				mountsFlag,
 				replicaFlag,
 				usernameFlag,
+				userFlag,
 				homedirFlag,
 				dockerImageFlag,
 				constraintsFlag,
