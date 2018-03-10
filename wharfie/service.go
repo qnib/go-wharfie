@@ -68,7 +68,7 @@ func (w *Wharfie) CreateService() (err error){
 		Env: env,
 		Hostname: `{{.Service.Name}}.{{.Task.Slot}}.{{.Task.ID}}`,
 		Dir: fmt.Sprintf("%s/%s", w.do.Homedir, w.do.Username),
-		User: w.do.Username,
+		User: w.do.User,
 	}
 	netConfig := []swarm.NetworkAttachmentConfig{}
 	netConfig = append(netConfig, swarm.NetworkAttachmentConfig{Target: id})
